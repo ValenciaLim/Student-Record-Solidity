@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/web3@0.20.5/dist/web3.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+        <link rel="stylesheet" href="app.css">
+        <script src="app.js"></script>
+        <!-- The generated javascript and app.js will be substituted in below -->
+        <!-- JAVASCRIPT -->
+        <script>
+        window.addEventListener('load', function() {
+             // Check whether it's already injected by something else (like Metamask or Parity Chrome plugin)
+            if(typeof web3 !== 'undefined') {
+                web3 = new Web3(web3.currentProvider);
+
+            // Or connect to a node
+            } else {
+                web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8887"));
+            }
+
+            // Check the connection
+            if(!web3.isConnected()) {
+                console.error("Not connected");
+            }
+
+            var account = web3.eth.accounts[0];
+            var acct_text = document.getElementById("account");
+            var accountInterval = setInterval(function() {
+              if (web3.eth.accounts[0] !== account) {
+                account = web3.eth.accounts[0];
+                document.getElementById("account").innerHTML = "";
+                acct_text.innerHTML += account;
+                $("#account").click();
+
+                // Get all elements with class="tabcontent" and hide them
+                tabcontent = document.getElementsByClassName("tabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+
+                // Get all elements with class="tablinks" and remove the class "active"
+                tablinks = document.getElementsByClassName("tablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+              }
+            }, 100);
+        });
+
+        function openTab(evt, tabName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        function changeRecordType(type){
+            if (type == "polytechnic"){
+                polyIDs = ["SP", "NP", "TP", "NYP", "RP"];
+                polyNames = ["Singapore Polytechnic", "Ngee Ann Polytechnic", "Temasek Polytechnic", "Nanyang Polytechnic", "Republic Polytechnic"];
+                var selects = document.getElementsByClassName("ddl_institution");
+                for (var i=0; i<selects.length; i++){
+                    selects[i].textContent = "";
+                    for (var poly_index=0; poly_index<polyIDs.length; poly_index++){
+                        var option = document.createElement("option");
+                        option.text = polyNames[poly_index];
+                        option.value = polyIDs[poly_index];
+                        selects[i].appendChild(option);
+                    }
+                }
+            }
+            else{
+                uniIDs = ["NUS", "NTU", "SMU", "SUTD", "SIT", "SUSS"];
+                uniNames = ["National University of Singapore", "Nanyang Technological University", "Singapore Management University",
+                "Singapore University of Technology and Design", "Singapore Institute of Technology", "Singapore University of Social Sciences"];
+                var selects = document.getElementsByClassName("ddl_institution");
+                for (var i=0; i<selects.length; i++){
+                    selects[i].textContent = "";
+                    for (var uni_index=0; uni_index<uniIDs.length; uni_index++){
+                        var option = document.createElement("option");
+                        option.text = uniNames[uni_index];
+                        option.value = uniIDs[uni_index];
+                        selects[i].appendChild(option);
+                    }
+                }
+            }
+        }
+        </script>
+
+        <!-- The app.css contents will be substituted in below -->
+        <!-- STYLE -->
+    </head>
+    <body>
+        <!-- NAVIGATION -->
+        <div class="tab">
+            <div style="background-color:#FCE8DF; text-align:left; color:#696969; padding:4px 6px;">
+                you are login as:&nbsp;&nbsp;<p id="account" style="display:inline;"></p>
+            </div>
+            <div>
+                <div class="radiobtn">
+                    <input type="radio" name="recordtype" value="polytechnic" onchange="changeRecordType('polytechnic')">
+                    <label for="recordtype">Polytechnic</label>
+                </div>
+                <div class="radiobtn">
+                    <input type="radio" name="recordtype" value="university" onchange="changeRecordType('university')">
+                    <label for="recordtype">University</label>
+                </div>
+            </div>
+            <div style="clear:both;">
+                <button class="tablinks" id="create-btn" onclick="openTab(event, 'create_new_record')">Create New Record</button>
+                <div class="subnav" id="add-btns">
+                    <button class="tablinks">Add &nbsp;<i class="fa fa-caret-square-o-down"></i></button>
+                    <div class="subnav-content">
+                        <button class="tablinks" onclick="openTab(event, 'add_grade')">Grade</button>
+                        <button class="tablinks" onclick="openTab(event, 'add_cca_achievement')">CCA Achievement</button>
+                        <button class="tablinks" onclick="openTab(event, 'add_cert_award')">Cert/Award</button>
+                    </div>
+                </div>
+                <button class="tablinks" id="view-record-btn" onclick="openTab(event, 'view_record')">View Record</button>
+                <button class="tablinks" id="my-records-btn" onclick="openTab(event, 'my_record')">My Records</button>
+                <button class="tablinks" id="unregister-btn" onclick="openTab(event, 'unregister_student')">Unregister</button>
+                <button class="tablinks" id="auth-viewers-btn" onclick="openTab(event, 'authorise_viewer')">Authorise Viewer</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="studentrecordList">
+            <h2 class="text-center">Student Records</h2>
+            <br>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Student No</th>
+                        <th scope="col">Student NRIC</th>
+                    </tr>
+                </thead>
+                <tbody id="records">
+                </tbody>
+            </table>
+            <br>
+            <span id="message"></span>
+        </div>
+        <hr>
+
+        <div id="create_new_record" class="tabcontent">
+            <form action="" method="post" onsubmit="return false;">
+                <h2 class="text-center">Create New Student Record</h2>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="newFullName" class="form-control" placeholder="Enter new student's full name..." required>
+            </div>
+            <div class="form-group">
+                <label>NRIC</label>
+                <input type="text" id="newNric" class="form-control" placeholder="Enter new student's NRIC..." required>
+            </div>
+            <div class="form-group">
+                <label>Wallet Address</label>
+                <input type="text" id="newWalletAddress" class="form-control" placeholder="Enter new student's wallet address..." required>
+            </div>
+            <div class="form-group">
+                <label>Student No</label>
+                <input type="number" id="newStudentNo" class="form-control" placeholder="Enter new student's student no..." required>
+            </div>
+            <div class="form-group">
+                <label>Institution</label>
+                <select id="newPolyID" class="ddl_institution form-control" placeholder="Choose an institution..." required>                 
+                </select>
+            </div>
+            <div class="form-group">
+                <label>School/Department ID</label>
+                <input type="text" id="newSchoolID" class="form-control" placeholder="Enter School/Department ID..." required>
+            </div>
+            <div class="form-group">
+                <label>Course Code</label>
+                <input type="text" id="newCourseCode" class="form-control" placeholder="Enter Course Code..." required>
+            </div>
+            <div class="form-group">
+                <br/>
+                <button class="btn btn-default" id="button-create-record">Create</button>
+            </div>
+            </form>
+        </div>
+
+        <div id="add_grade" class="tabcontent">
+            <form action="" method="post" onsubmit="return false;">
+                <h2 class="text-center">Add Grade</h2>
+            <div class="form-group">
+                <label>Student No</label>
+                <input type="number" id="agStudentNo" class="form-control" placeholder="Enter student number..." required>
+            </div>
+            <div class="form-group">
+                <label>Institution</label>
+                <select id="agPolyID" class="ddl_institution form-control" placeholder="Choose an institution..." required>                 
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Module Code</label>
+                <input type="text" id="agModuleCode" class="form-control" placeholder="Enter module code..." required>
+            </div>
+            <div class="form-group">
+                <label>Module Name</label>
+                <input type="text" id="agModuleName" class="form-control" placeholder="Enter module name..." required>
+            </div>
+            <div class="form-group">
+                <label>Credit worth</label>
+                <input type="number" min="1" id="agCredit" class="form-control" placeholder="Enter module's credit worth..." oninput="validity.valid||(value='');" required>
+            </div>
+            <div class="form-group">
+                <label>Grade achieved</label>
+                <select id="agGrade" class="form-control" placeholder="Choose an institution..." required>
+                    <option value="A">A</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>      
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="F">F</option>      
+                </select>
+            </div>
+            <div class="form-group">
+                <br/>
+                <button class="btn btn-default" id="button-add-grade">Add</button>
+            </div>
+            </form>
+        </div>
+
+        <div id="add_cca_achievement" class="tabcontent">
+            <form action="" method="post" onsubmit="return false;">
+                <h2 class="text-center">Add CCA Achievement</h2>
+            <div class="form-group">
+                <label>Student No</label>
+                <input type="number" id="acaStudentNo" class="form-control" placeholder="Enter student number..." required>
+            </div>
+            <div class="form-group">
+                <label>Institution</label>
+                <select id="acaPolyID" class="ddl_institution form-control" placeholder="Choose an institution..." required>                 
+                </select>
+            </div>
+            <div class="form-group">
+                <label>CCA Club</label>
+                <input type="text" id="acaClubName" class="form-control" placeholder="Enter name of CCA club..." required>
+            </div>
+            <div class="form-group">
+                <label>Achievement Title</label>
+                <input type="text" id="acaAchievementTitle" class="form-control" placeholder="Enter title of achievement..." required>
+            </div>
+            <div class="form-group">
+                <label>CCA points</label>
+                <input type="number" min="1" id="acaPoints" class="form-control" placeholder="Enter cca points awarded..." oninput="validity.valid||(value='');" required>
+            </div>
+            <div class="form-group">
+                <br/>
+                <button class="btn btn-default" id="button-add-cca-achievement">Add</button>
+            </div>
+            </form>
+        </div>
+
+        <div id="add_cert_award" class="tabcontent">
+            <form action="" method="post" onsubmit="return false;">
+                <h2 class="text-center">Add Certificate/Award</h2>
+            <div class="form-group">
+                <label>Student No</label>
+                <input type="number" id="acertStudentNo" class="form-control" placeholder="Enter student number..." required>
+            </div>
+            <div class="form-group">
+                <label>Institution</label>
+                <select id="acertPolyID" class="ddl_institution form-control" placeholder="Choose an institution..." required>                 
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Certificate/Award No</label>
+                <input type="number" id="acertNo" class="form-control" placeholder="Enter cert/award no..." required>
+            </div>
+            <div class="form-group">
+                <label>Name of Certificate/Award</label>
+                <input type="text" id="acertName" class="form-control" placeholder="Enter name of cert/award..." required>
+            </div>
+            <div class="form-group">
+                <label>Issued By</label>
+                <input type="text" id="acertIssuedBy" class="form-control" placeholder="Enter issued by..." required>
+            </div>
+            <div class="form-group">
+                <label>Date of Issue</label>
+                <input type="date" id="acertIssueDate" class="form-control" placeholder="Enter date of issue..." required>
+            </div>
+            <div class="form-group">
+                <label>Cartificate/Award Achievement</label>
+                <input type="text" id="acertAchievement" class="form-control" placeholder="Enter cert/award achievement..." required>
+            </div>
+            <div class="form-group">
+                <br/>
+                <button class="btn btn-default" id="button-add-cert-award">Add</button>
+            </div>
+            </form>
+        </div>
+
+        <div id="view_record" class="tabcontent">
+            <h2 class="text-center">View Student Record</h2>
+            <div class="form-group">
+                <label>Student NRIC</label><br/>
+                <input type="text" id="nric" class="form-control" placeholder="Enter student's NRIC..." style="width:55%; display:inline-block;">
+                <button class="btn btn-default" id="button-view-record" style="display:inline-block; margin-top:-3px;">View</button>
+            </div>
+            <br/>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Student No</th>
+                        <th scope="col">Institution</th>
+                        <th scope="col">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody id="astudrecords">
+                </tbody>
+            </table>
+            <br/>
+            <h3>Student Record</h3>
+            <div id="arecord" style="visibility:hidden;">
+                <table class="table">
+                    <tr style="background-color: #FCE8DF; color:black;">
+                        <td colspan="5">Student Details</td>
+                    </tr>
+                <tr>
+                    <td>Full Name: </td>
+                    <td id="tdFullName"></td>
+                    <td>&nbsp;</td>
+                    <td>Student No: </td>
+                    <td id="tdStudentNo"></td>
+                </tr>
+                <tr>
+                    <td>NRIC: </td>
+                    <td id="tdNric"></td>
+                    <td>&nbsp;</td>
+                    <td>Institution: </td>
+                    <td id="tdPoly"></td>
+                </tr>
+                <tr>
+                    <td  colspan="3">&nbsp;</td>
+                    <td>School/Department: </td>
+                    <td id="tdSchool"></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                    <td>Course: </td>
+                    <td id="tdCourse"></td>
+                </tr>
+                <tr>
+                    <td  colspan="3">&nbsp;</td>
+                    <td>Status: </td>
+                    <td id="tdStatus"></td>
+                </tr>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #FCE8DF; color:black;">
+                    <td colspan="5">Modules</td>
+                </tr>
+                <tbody id="modules">                 
+                </tbody>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #FCE8DF; color:black;">
+                    <td colspan="5">CCA Achievements</td>
+                </tr>
+                <tbody id="ccas">                  
+                </tbody>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #FCE8DF; color:black;">
+                    <td colspan="5">Certificates & Awards</td>
+                </tr>
+                <tbody id="cert_awards">                  
+                </tbody>
+            </table>
+
+            </div>
+        </div>
+
+        <div id="my_record" class="tabcontent">
+            <h2 class="text-center">My Student Records</h2>
+            <br/>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Student No</th>
+                        <th scope="col">Institution</th>
+                        <th scope="col">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody id="myrecords">
+                </tbody>
+            </table>
+            <br/>
+            <h3>Student Record</h3>
+            <div id="myRecord" style="visibility:hidden;">
+                <table class="table">
+                    <tr style="background-color: #FCE8DF; color:black;">
+                        <td colspan="5">Student Details</td>
+                    </tr>
+                <tr>
+                    <td>Full Name: </td>
+                    <td id="myFullName"></td>
+                    <td>&nbsp;</td>
+                    <td>Student No: </td>
+                    <td id="myStudentNo"></td>
+                </tr>
+                <tr>
+                    <td>NRIC: </td>
+                    <td id="myNric"></td>
+                    <td>&nbsp;</td>
+                    <td>Institution: </td>
+                    <td id="myPoly"></td>
+                </tr>
+                <tr>
+                    <td  colspan="3">&nbsp;</td>
+                    <td>School/Department: </td>
+                    <td id="mySchool"></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                    <td>Course: </td>
+                    <td id="myCourse"></td>
+                </tr>
+                <tr>
+                    <td  colspan="3">&nbsp;</td>
+                    <td>Status: </td>
+                    <td id="myStatus"></td>
+                </tr>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #FCE8DF; color:black;">
+                    <td colspan="5">Modules</td>
+                </tr>
+                <tbody id="myModules">
+                </tbody>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #FCE8DF; color:black;">
+                    <td colspan="5">CCA Achievements</td>
+                </tr>
+                <tbody id="myCcas">
+                </tbody>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #FCE8DF; color:black;">
+                    <td colspan="5">Certificates & Awards</td>
+                </tr>
+                <tbody id="myCertAwards">
+                </tbody>
+            </table>
+
+            </div>
+        </div>
+
+        <div id="unregister_student" class="tabcontent">
+            <form action="" method="post" onsubmit="return false;">
+                <h2 class="text-center">Unregister Student</h2>
+            <div class="form-group">
+                <label>Student No</label>
+                <input type="text" id="urStudentNo" class="form-control" placeholder="Enter student no..." required>
+            </div>
+            <div class="form-group">
+                <label>Institution</label>
+                <select id="urPoly" class="ddl_institution form-control" placeholder="Choose an institution..." required> 
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Student status</label>
+                <select id="urStatus" class="form-control" placeholder="Choose a status..." required>
+                    <option value="Transferred">Transferred</option>
+                    <option value="Expelled">Expelled</option>
+                    <option value="Graduated">Graduated</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <br/>
+                <button class="btn btn-default" id="button-unregister">Unregister</button>
+            </div>
+            <br/>
+            </form>
+        </div>
+
+        <div id="authorise_viewer" class="tabcontent">
+            <form action="" method="post" onsubmit="return false;">
+                <h2 class="text-center">Authorise Viewer</h2>
+            <div class="form-group">
+                <label>Wallet Address</label>
+                <input type="text" id="authAddress" class="form-control" placeholder="Enter wallet address..." required>
+            </div>
+            <div class="form-group">
+                <br/>
+                <button class="btn btn-default" id="button-authorise">Authorise</button>&nbsp;&nbsp;
+                <button class="btn btn-default" id="button-remove">Remove</button>
+            </div>
+            <br/>
+            </form>
+        </div>
+        </div>
+    </body>
+</html>
